@@ -42,3 +42,27 @@ with DAG(
             )
             content_list.append(file_content)
         return content_list 
+
+
+    # Read the contents from all files in the ingest bucket
+    content_list = read_keys_from_s3(XComArg(list_file_ingest_bucket))
+
+
+
+    @task
+    def test_if_integer(content_list):
+        # Tests the content of each file for wheter it is an integer
+        destination_list = []
+        for file_content in content_list:
+            if isinstance(file_content,int):
+                destination_list.append(S3_INTEGER_BUCKET)
+            else:
+                destination_list.append(S3_NOT_INTEGER_BUCKET)
+        return destination_list
+
+
+    # Create a list of destinations based on the content in the file
+    dest_key_list = test_if_integer(content_list)
+    
+
+    
