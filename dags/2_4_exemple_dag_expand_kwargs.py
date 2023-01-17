@@ -66,7 +66,6 @@ with DAG(
 
 
     @task
-
     def generate_source_dest_pairs(source_key_list, dest_key_list):
         """ Create a XComArg containing a list of dicts.
         The dicts contain the source and destination bucket keys for 
@@ -82,4 +81,10 @@ with DAG(
             )
         return list_of_source_dest_pairs
 
-    
+    # Generates the list of dicts to pass to the expand_kwargs argument of the copy_files_S3 task
+    source_dest_pairs = generate_source_dest_pairs(
+        XComArg(list_files_ingest_bucket)
+        dest_key_list
+    )
+
+
