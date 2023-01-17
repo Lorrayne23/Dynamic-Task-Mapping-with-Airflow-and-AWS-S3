@@ -88,3 +88,13 @@ with DAG(
     )
 
 
+    # dynamically copy all files into either the S3_INTEGER_BUCKET or the
+    # S3_NOT_INTEGER_BUCKET . One task per file.
+
+    copy_files_S3 = S3CopyObjectOperator.partial(
+        task_id="copy_files_S3",
+        aws_conn_id= "aws_default"
+    ).expand_kwargs(source_dest_pairs)
+
+
+
