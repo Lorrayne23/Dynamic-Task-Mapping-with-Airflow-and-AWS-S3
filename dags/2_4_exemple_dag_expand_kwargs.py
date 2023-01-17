@@ -90,11 +90,18 @@ with DAG(
 
     # dynamically copy all files into either the S3_INTEGER_BUCKET or the
     # S3_NOT_INTEGER_BUCKET . One task per file.
-
     copy_files_S3 = S3CopyObjectOperator.partial(
         task_id="copy_files_S3",
         aws_conn_id= "aws_default"
     ).expand_kwargs(source_dest_pairs)
+
+
+    # Dynamically delete the files in the ingest bucket. One task per file.
+    delete_content_ingest_bucket = S3DeleteObjectsOperator.partial(
+        task_id="delete_content_ingest_bucket",
+        aws_conn_id="aws_default",
+        bucket=S3_INGEST_BUCKET
+    ).expand(keys=XComArg(list_file_ingest_bucket))
 
 
 
