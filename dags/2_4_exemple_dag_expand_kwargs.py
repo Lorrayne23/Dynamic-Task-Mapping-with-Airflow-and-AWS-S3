@@ -103,5 +103,7 @@ with DAG(
         bucket=S3_INGEST_BUCKET
     ).expand(keys=XComArg(list_file_ingest_bucket))
 
+    # set dependencies not set by the TaskFlowAPI
+    copy_files_S3 >> delete_content_ingest_bucket
 
 
