@@ -2,6 +2,7 @@ from airflow import DAG, XComArg
 from airflow.decorators import task
 import pendulum
 import datetime
+from airflow.hooks.S3_hook import S3Hook
 
 from airflow.providers.amazon.aws.operators.s3 import (
     S3CopyObjectOperator, S3ListOperator , S3DeleteObjectsOperator
@@ -9,14 +10,14 @@ from airflow.providers.amazon.aws.operators.s3 import (
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 
 #define the ingest and destination buckets
-S3_INGEST_BUCKET = "caxe-demo-bucket"
-S3_INTEGER_BUCKET = "caxe-demo-bucket/example-integer-bucket"
-S3_INTEGER_BUCKET = "caxe-demo-bucket/example-not-integer-bucket"
+S3_INGEST_BUCKET = "bucketairflowlorrayne"
+S3_INTEGER_BUCKET = "bucketairflowlorrayne/example-integer-bucket"
+S3_NOT_INTEGER_BUCKET = "bucketairflowlorrayne/example-not-integer-bucket"
 
 
 with DAG(
     dag_id="2_4_exemple_dag_expand_kwargs",
-    start_date=pendulum.datetime(2022,10,10, tz="UTC"),
+    start_date=pendulum.datetime(2022,9,1, tz="UTC"),
     schedule=None,
     catchup=False,
     doc_md=__doc__,
@@ -24,7 +25,7 @@ with DAG(
 
     #fetch the file names from the injest S3 bucket
     list_files_ingest_bucket = S3ListOperator(
-        task_id="list_file_ingest_bucket",
+        task_id="list_files_ingest_bucket",
         aws_conn_id="aws_default",
         bucket=S3_INGEST_BUCKET
     )
@@ -45,7 +46,7 @@ with DAG(
 
 
     # Read the contents from all files in the ingest bucket
-    content_list = read_keys_from_s3(XComArg(list_file_ingest_bucket))
+    content_list = read_keys_from_s3(XComArg(list_files_ingest_bucket))
 
 
 
@@ -83,7 +84,7 @@ with DAG(
 
     # Generates the list of dicts to pass to the expand_kwargs argument of the copy_files_S3 task
     source_dest_pairs = generate_source_dest_pairs(
-        XComArg(list_files_ingest_bucket)
+        XComArg(list_files_ingest_bucket),
         dest_key_list
     )
 
@@ -101,7 +102,7 @@ with DAG(
         task_id="delete_content_ingest_bucket",
         aws_conn_id="aws_default",
         bucket=S3_INGEST_BUCKET
-    ).expand(keys=XComArg(list_file_ingest_bucket))
+    ).expand(keys=XComArg(list_files_ingest_bucket))
 
     # set dependencies not set by the TaskFlowAPI
     copy_files_S3 >> delete_content_ingest_bucket
