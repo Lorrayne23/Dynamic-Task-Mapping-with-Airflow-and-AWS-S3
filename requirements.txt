@@ -1,0 +1,2 @@
+astronomer-providers[all]==1.10.0
+astro-sdk-python[amazon-snowflake]
