@@ -63,6 +63,23 @@ with DAG(
 
     # Create a list of destinations based on the content in the file
     dest_key_list = test_if_integer(content_list)
-    
+
+
+    @task
+
+    def generate_source_dest_pairs(source_key_list, dest_key_list):
+        """ Create a XComArg containing a list of dicts.
+        The dicts contain the source and destination bucket keys for 
+        each file in the ingest bucket.
+        """
+        list_of_source_dest_pairs = []
+        for s , d in zip(source_key_list, dest_key_list):
+            list_of_source_dest_pairs.append(
+                {
+                    "source_bucket_key": f"s3://{S3_INGEST_BUCKET}/{s}",
+                    "dest_bucket_key": f"s3://{d}/{s}"
+                }
+            )
+        return list_of_source_dest_pairs
 
     
